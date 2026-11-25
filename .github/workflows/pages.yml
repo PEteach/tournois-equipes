@@ -33,3 +33,5 @@ jobs:
       - name: Déployer
         id: deployment
         uses: actions/deploy-pages@v4
+
+# Relance après correction du sélecteur de groupe des équipes.

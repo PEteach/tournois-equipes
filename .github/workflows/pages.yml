@@ -1,4 +1,5 @@
 name: Publier PEteach Tournois sur GitHub Pages
+# Déploiement relancé sur un nouveau run pour repartir avec un artefact propre.
 
 on:
   push:

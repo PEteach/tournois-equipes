@@ -32,6 +32,8 @@ jobs:
         with:
           name: github-pages
           path: .
+      - name: Attendre la disponibilité de l’artefact Pages
+        run: sleep 10
       - name: Déployer
         id: deployment
         uses: actions/deploy-pages@v4

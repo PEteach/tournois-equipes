@@ -1,0 +1,37 @@
+name: Vérifier le service de partage Supabase
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/shared-tournament/**'
+      - '.github/workflows/shared-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Vérifier la fonction et sa connexion à la base de données
+        shell: bash
+        run: |
+          set -euo pipefail
+          response="$(curl --fail-with-body --silent --show-error --request POST \
+            'https://dztsxjamhxpnldbwcvps.supabase.co/functions/v1/shared-tournament' \
+            --header 'apikey: sb_publishable_6Fin6YNmMmj-OMrCg9WaJQ_7KKCQD73' \
+            --header 'Content-Type: application/json' \
+            --data '{"action":"health"}')"
+          echo "$response"
+          echo "$response" | grep -q '"ok":true'
+      - name: Vérifier qu'un code inexistant est refusé
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --show-error --output /tmp/join.json --write-out '%{http_code}' \
+            --request POST 'https://dztsxjamhxpnldbwcvps.supabase.co/functions/v1/shared-tournament' \
+            --header 'apikey: sb_publishable_6Fin6YNmMmj-OMrCg9WaJQ_7KKCQD73' \
+            --header 'Content-Type: application/json' \
+            --data '{"action":"join","code":"0000000000"}')"
+          cat /tmp/join.json
+          test "$status" = "404"
+          grep -q 'Code introuvable' /tmp/join.json

@@ -6,10 +6,11 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Content-Type": "application/json",
 };
-
+const secretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
+const backendKey = secretKeys.default ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const supabase = createClient(
   Deno.env.get("SUPABASE_URL")!,
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  backendKey,
   { auth: { persistSession: false, autoRefreshToken: false } },
 );
 
@@ -57,6 +58,12 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json();
     const action = String(body?.action ?? "");
+
+    if (action === "health") {
+      const { error } = await supabase.from("shared_tournaments").select("id").limit(1);
+      if (error) throw error;
+      return reply(200, { ok: true, service: "shared-tournament", database: "connected" });
+    }
 
     if (action === "create") {
       if (!validSnapshot(body.snapshot)) return reply(400, { error: "Sauvegarde de tournoi invalide." });
